@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        table{
+            border-collapse: collapse;
+            
+        }
+        td {
+            border: 1px solid black;
+            
+            width: 50px;
+            padding: 10px;
+            text-align: left;
+            
+        }
+        th{
+            border: 1px solid black;
+            margin: 0px;
+            padding: 2px;
+            text-align: center;
+
+        }
+
+    </style>
+</head>
+<body>
+    <div>
+        <input class="box" type="text" placeholder="email"></input>
+        <input class="box" type="text" placeholder="password"></input>
+        <input class="box" type="text" placeholder="name"></input>
+        <input class="box" type="text" placeholder="Phone Number"></input>
+        <input class="box" type="text" placeholder="role"></input>
+        <input id="get" type="submit" value="submit"/>
+        <input id="post" type="submit" value="delete"/>
+    </div>
+    <table id="table">
+
+
+    </table>
+    <p id="result"></p>
+
+    <script>
+        const box = document.getElementsByClassName("box");
+        const get = document.getElementById("get");
+        const post = document.getElementById("post");
+        const result = document.getElementById("result");
+        const table = document.getElementById("table");
+        
+        const tableHead = 
+            `
+                <tr>
+                    <th>id</th>
+                    <th>Username</th>
+                    <th>Password</th>
+                    <th>Name</th>
+                    <th>Phone Number</th>
+                    <th>Role</th>
+                </tr>
+            `;
+
+        
+
+        const loadData = async() => {
+            
+            // e.preventDefault();
+            const res = await fetch("http://localhost:3000/getdata",{
+                method: "GET"
+            })
+            const data = await res.json();
+            const convertArray= data.map(
+                data => 
+                `
+                    <tr>
+                        <td>${data.id}</td>
+                        <td>${data.email}</td>
+                        <td>${data.password}</td>
+                        <td>${data.name}</td>
+                        <td>${data.phonenumber}</td>
+                        <td>${data.role}</td>
+                    </tr>                
+                `
+            );
+
+            const tableStr= tableHead + convertArray.join("");
+            table.innerHTML = tableStr; 
+            console.log(document.getElementsByClassName("box"));
+            result.innerText = box[0].value;
+
+        };
+
+
+        async function handlehashing(e, password){
+            e.preventDefault();
+            const res = await fetch("http://localhost:3000/hash",{
+                method: "POST",
+                headers: {
+                    "Content-Type":"application/json"
+                },
+                body: JSON.stringify({
+                    password: password
+                })
+            });
+            const response = await res.json();
+            console.log(response);
+            return response;
+
+                
+        }
+
+        document.addEventListener("DOMContentLoaded", loadData);
+
+
+
+        get.addEventListener("click", hanldesubmit);        
+        async function hanldesubmit(e){
+            
+            e.preventDefault();
+            
+            try{
+                
+                const res = await fetch("http://localhost:3000/submit",{
+                        method: "POST",
+                        headers: {
+                        "Content-Type": "application/json"
+                    },
+                        body: JSON.stringify({
+                        email: box[0].value,
+                        password: box[1].value,
+                        name: box[2].value,
+                        phonenumber: box[3].value,
+                        role: box[4].value
+                    })
+                });
+                if(!res.ok)
+                {
+                    const feedback = await res.json();
+                    console.log(feedback.status);
+                    return;
+                }
+                loadData();
+                
+            }
+            catch(err){
+                console.log('lol');
+            }
+              
+        }
+
+        post.addEventListener("click", hanldesubmitpost);
+
+        async function hanldesubmitpost(e){
+            e.preventDefault();
+
+            if(!box[0].value) return;
+            
+            try
+            {
+                const res = await fetch("http://localhost:3000/delete",{
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email: box[0].value,
+                        password: box[1].value
+                        })
+                })
+
+                if(!res.ok)
+                {
+                    const feedback = await res.json();
+                    console.log(feedback.status);
+                    return;
+                }
+                loadData(e);
+
+
+            }
+            catch(err)
+            {
+                console.log(err);
+            }
+                     
+        }
+        
+        // async function hanldesubmitpost(e){
+        //     e.preventDefault();
+        //     const res = await fetch("http://localhost:3000/post1",{
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json"
+        //         },
+        //         body: JSON.stringify({
+        //             data: box.value,
+        //             dataDouble: box.value + box.value
+        //         })
+        //     })         
+        // }
+
+
+    </script>
+</body>
+</html>
